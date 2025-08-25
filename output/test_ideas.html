@@ -93,6 +93,51 @@ blockquote {
     color: #666;
     font-size: 0.9rem;
 }
+/* Dark mode support using prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #222;
+        color: #eee;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #fff;
+    }
+    h1 {
+        border-bottom: 2px solid #fff;
+    }
+    a {
+        color: #fff;
+    }
+    a:hover {
+        background: #fff;
+        color: #000;
+    }
+    code {
+        background: #333;
+        color: #fff;
+    }
+    pre {
+        background: #333;
+        color: #fff;
+    }
+    blockquote {
+        border-left: 4px solid #fff;
+    }
+    .note-item {
+        border: 1px solid #444;
+        background: #2a2a2a;
+    }
+    .note-title {
+        color: #fff;
+    }
+    .note-date {
+        color: #aaa;
+    }
+    .footer {
+        border-top: 1px solid #444;
+        color: #aaa;
+    }
+}
 </style>
 </head>
 <body>
@@ -115,26 +160,24 @@ blockquote {
 </blockquote>
 <h2 id="things-to-learn">Things to Learn</h2>
 <ol>
-<li><strong>Web Development</strong></li>
-<li>FastHTML</li>
-<li>HTMX</li>
 <li>
-<p>CSS Grid/Flexbox</p>
+<p><strong>Web Development</strong><br />
+   - FastHTML<br />
+   - HTMX<br />
+   - CSS Grid/Flexbox</p>
 </li>
 <li>
-<p><strong>Data Science</strong></p>
-</li>
-<li>Pandas</li>
-<li>NumPy</li>
-<li>
-<p>Matplotlib</p>
+<p><strong>Data Science</strong><br />
+   - Pandas<br />
+   - NumPy<br />
+   - Matplotlib</p>
 </li>
 <li>
-<p><strong>Tools</strong></p>
+<p><strong>Tools</strong><br />
+   - Git workflows<br />
+   - Docker<br />
+   - VS Code extensions</p>
 </li>
-<li>Git workflows</li>
-<li>Docker</li>
-<li>VS Code extensions</li>
 </ol>
 <h2 id="random-thoughts">Random Thoughts</h2>
 <p>Sometimes the simplest solutions are the best ones. This static site generator is proof of that - just a simple Python script that converts markdown to HTML.</p>

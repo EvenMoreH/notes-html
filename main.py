@@ -3,12 +3,15 @@ import markdown
 from datetime import datetime
 from formatcss import TEMPLATE_CSS
 
+
 # list of extensions to be used by markdown converter
 md_extensions = [
     "extra",
     "toc",
     "codehilite",
     "smarty",
+    "sane_lists",
+    "nl2br",
 ]
 
 # directories
@@ -52,21 +55,21 @@ def remove_bad_metadata(md_content):
 def list_of_notes_to_convert():
     # making a list of .md files in given directory so it can be iterated over
     md_files = list(NOTES_DIRECTORY.glob("*.md"))
-    files_in_dir = []
+    md_files_in_dir = []
     for file in md_files:
         if file.is_file():
-            files_in_dir.append(file)
+            md_files_in_dir.append(file)
 
-    return files_in_dir
+    return md_files_in_dir
 
 # iterating over all .md files in notes directory
-def convert_md_to_html(files_in_dir):
+def convert_md_to_html(md_files_in_dir):
     # creating map for file - title pairs
     html_titles = {}
     # creating map for file - modified date pairs
     modified_dates = {}
 
-    for file in files_in_dir:
+    for file in md_files_in_dir:
         # check if conversions will be done on correct files
         if file.is_file() and file.suffix == ".md":
             # creating file_out path to save converted files to as .html
@@ -172,14 +175,43 @@ def generate_index_file(html_titles, modified_dates):
 
     # crating/saving index.html
     index_file = OUTPUT_DIRECTORY / "index.html"
-    with open(index_file, "w") as f:
+    with open(index_file, "w", encoding="utf-8") as f:
         f.write(index_page)
 
 
+def remove_unnecessary_html_files():
+    # find all md files that were converted
+    live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
+    live_md_files_in_dir = []
+    for file in live_md_files:
+        if file.is_file():
+            live_md_files_in_dir.append(file.stem)
+    # adding mock index to list for easier comparisons
+    live_md_files_in_dir.append("index")
+
+    # find all published html files
+    live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
+    live_html_files_in_dir = []
+    for file in live_html_files:
+        if file.is_file():
+            live_html_files_in_dir.append(file.stem)
+
+    # generate a list of redundant html files (their .md were deleted)
+    redundant_files = list(set(live_html_files_in_dir) ^ set(live_md_files_in_dir))
+
+    # remove all redundant html files
+    for file in redundant_files:
+        filename = file + ".html"
+        file_path = OUTPUT_DIRECTORY / filename
+
+        if file_path.exists():
+            file_path.unlink()
+
 def build_notes():
     directory_exists()
-    files_in_dir = list_of_notes_to_convert()
-    html_titles, modified = convert_md_to_html(files_in_dir)
+    md_files_in_dir = list_of_notes_to_convert()
+    html_titles, modified = convert_md_to_html(md_files_in_dir)
+    remove_unnecessary_html_files()
     generate_index_file(html_titles, modified)
 
 

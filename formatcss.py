@@ -87,4 +87,49 @@ blockquote {
     color: #666;
     font-size: 0.9rem;
 }
+/* Dark mode support using prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #222;
+        color: #eee;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #fff;
+    }
+    h1 {
+        border-bottom: 2px solid #fff;
+    }
+    a {
+        color: #fff;
+    }
+    a:hover {
+        background: #fff;
+        color: #000;
+    }
+    code {
+        background: #333;
+        color: #fff;
+    }
+    pre {
+        background: #333;
+        color: #fff;
+    }
+    blockquote {
+        border-left: 4px solid #fff;
+    }
+    .note-item {
+        border: 1px solid #444;
+        background: #2a2a2a;
+    }
+    .note-title {
+        color: #fff;
+    }
+    .note-date {
+        color: #aaa;
+    }
+    .footer {
+        border-top: 1px solid #444;
+        color: #aaa;
+    }
+}
 """
