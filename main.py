@@ -87,17 +87,20 @@ def convert_md_to_html(md_files_in_dir):
                 # actual conversion using markdown instance
                 html_note = md.convert(md_content)
 
-            # assigning title for the page
-            # injecting data into html
-            # mapping .md title to the actual file
-            # adding return to notes button
+            # building the .html file
             with file_out.open("w", encoding="utf-8") as f:
+                # assigning title for the page
                 title = extract_title(file, md_content)
+                # mapping .md title to the actual file
                 html_titles[file_out.name] = title
 
+                # extracting modified date from file
                 modified = extract_modified_time(file)
+                # mapping modified date to the actual file
                 modified_dates[file_out.name] = modified
 
+                # injecting data into html
+                # adding return to notes button
                 html_page = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -116,6 +119,7 @@ def convert_md_to_html(md_files_in_dir):
                 # write full output to file
                 f.write(html_page)
 
+    # returning dictionaries of html titles and dates of modification mapped to filenames
     return html_titles, modified_dates
 
 
