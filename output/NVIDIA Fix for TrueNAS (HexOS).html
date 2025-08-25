@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nvidia Fix For Truenas (Hexos)</title>
+    <style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+    color: #333;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #000;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.5rem;
+}
+
+a {
+    color: #000;
+    text-decoration: underline;
+}
+
+a:hover {
+    background: #000;
+    color: #fff;
+}
+
+code {
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Consolas', monospace;
+}
+
+pre {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+blockquote {
+    border-left: 4px solid #000;
+    margin-left: 0;
+    padding-left: 1rem;
+    font-style: italic;
+}
+
+.note-list {
+    list-style: none;
+    padding: 0;
+}
+
+.note-item {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.note-title {
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.note-date {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.back-link {
+    margin-bottom: 2rem;
+    display: inline-block;
+}
+
+.footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+}
+/* Dark mode support using prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #222;
+        color: #eee;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        color: #fff;
+    }
+    h1 {
+        border-bottom: 2px solid #fff;
+    }
+    a {
+        color: #fff;
+    }
+    a:hover {
+        background: #fff;
+        color: #000;
+    }
+    code {
+        background: #333;
+        color: #fff;
+    }
+    pre {
+        background: #333;
+        color: #fff;
+    }
+    blockquote {
+        border-left: 4px solid #fff;
+    }
+    .note-item {
+        border: 1px solid #444;
+        background: #2a2a2a;
+    }
+    .note-title {
+        color: #fff;
+    }
+    .note-date {
+        color: #aaa;
+    }
+    .footer {
+        border-top: 1px solid #444;
+        color: #aaa;
+    }
+}
+</style>
+</head>
+<body>
+    <div>
+        <a href="index.html" class="back-link">← Back to Notes</a>
+    </div>
+    <div><hr />
+<p>title: &ldquo;Docker Apps and UUID issue with NVIDIA GPU after upgrade to 24.10 - TrueNAS General - TrueNAS Community Forums&rdquo;<br />
+source: &ldquo;https://forums.truenas.com/t/docker-apps-and-uuid-issue-with-nvidia-gpu-after-upgrade-to-24-10/22547&rdquo;<br />
+author:<br />
+  - &ldquo;[[HoneyBadger]]&rdquo;<br />
+published: 2024-11-01<br />
+created: 2025-02-11<br />
+description: &ldquo;Morning all, We’re tracking an issue with Apps that impacts NVIDIA users, which we’ve now added to the Known Issues page of our release notes. Some users who have upgraded to 24.10.0 from a previous version, and who ha&hellip;&ldquo;<br />
+tags:</p>
+<hr />
+<p>Morning all,</p>
+<p>We’re tracking an issue with Apps that impacts NVIDIA users, which we’ve now added to the Known Issues page of our release notes.</p>
+<p>Some users who have upgraded to 24.10.0 from a previous version, and who have applications with have NVIDIA GPU allocations, report the error <code>Expected [uuid] to be set for GPU inslot [&lt;some pci slot&gt;] in [nvidia_gpu_selection])</code> (see <a href="https://ixsystems.atlassian.net/browse/NAS-132086">NAS-132086</a>).</p>
+<p>Users experiencing this error should follow the steps below for a one time fix that should not need to be repeated.</p>
+<p>Connect to a shell session and retrieve the UUID for each GPU with the command <code>midclt call app.gpu_choices | jq</code>.</p>
+<p>For each application that experiences the error, run <code>midclt call -job app.update APP_NAME '{"values": {"resources": {"gpus": {"use_all_gpus": false, "nvidia_gpu_selection": {"PCI_SLOT": {"use_gpu": true, "uuid": "GPU_UUID"}}}}}}'</code></p>
+<p>Where:</p>
+<ul>
+<li><code>APP_NAME</code> is the name you entered in the application, for example “plex”.</li>
+<li><code>PCI_SLOT</code> is the pci slot identified in the error, for example &ldquo;0000:2d:00.0”.</li>
+<li><code>GPU_UUID</code> is the UUID matching the pci slot that you retrieved with the above command.</li>
+</ul>
+<p>Engineering is digging into the root cause of this - it may be related to the NVIDIA drivers being installed at first-boot, and the apps system isn’t refreshing the UUIDs correctly after the installation.</p>
+<p>If you’re having an issue with NVIDIA that <em>isn’t</em> related to the missing UUIDs, please start a separate thread, and ideally include the exact text of the error message. If you have an issue with driver installation, please also include the <code>/var/log/nvidia-installer.log</code> file as an attachment.</p></div>
+</body>
+</html>

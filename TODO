@@ -1,0 +1,17 @@
+Bug: remove_bad_metadata returns "" if no header → converts to empty HTML. Should return original content.
+
+<!-- Bug: generate_index_file may reference html_title / modified when they don't exist (unbound variable). Also sorting list_of_html_notes.sort() sorts HTML strings; better to build structured list and sort by title or date. -->
+
+Bug: remove_unnecessary_html_files uses symmetric difference (^) which can remove files unexpectedly. Use set difference: html_files - md_files.
+
+Style/API: directory_exists creates directories but name implies only check; rename to ensure_directories or create_directories.
+
+Robustness: use file.suffix.lower() to handle .MD; use Path.open consistently (avoid mixing open()).
+
+Performance: creating a new markdown.Markdown instance per file is okay but simpler to call markdown.markdown(...) or reuse and call reset().
+
+Minor: add type hints, small docstrings, basic logging, and small defensive checks.
+
+
+----
+Next: Add tests

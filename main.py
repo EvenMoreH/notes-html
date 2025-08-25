@@ -48,8 +48,9 @@ def remove_bad_metadata(md_content):
         if line.strip().startswith("#"):
             # when first .md header is found return it and all after it
             return "\n".join(lines[index:])
-    # if no header is found, return empty string
-    return ""
+    # if no header is found, return original content
+    # TODO: build logic that will grab just the title and return rest of the doc for docs that have no "#"
+    return md_content
 
 
 def list_of_notes_to_convert():
@@ -124,15 +125,11 @@ def convert_md_to_html(md_files_in_dir):
 
 
 def generate_index_file(html_titles, modified_dates):
-    # building index.html
-    html_notes = list(OUTPUT_DIRECTORY.glob("*.html"))
-    # remove index.html from the list of notes
-    existing_index_file = OUTPUT_DIRECTORY / "index.html"
-    if existing_index_file in html_notes:
-        html_notes.remove(existing_index_file)
+    # string comprehension to generate list of html_notes excluding index.html file itself
+    html_notes = [n for n in OUTPUT_DIRECTORY.glob("*.html") if n.is_file() and n.name != "index.html"]
 
-    # create empty list for notes
-    list_of_html_notes = []
+    # create empty dictionary for notes
+    dict_of_html_notes = {}
 
     # generate links to pages that will be injected into index.html
     for note in html_notes:
@@ -141,9 +138,11 @@ def generate_index_file(html_titles, modified_dates):
         if note.name in html_titles:
             html_title = html_titles[note.name]
             modified = modified_dates[note.name]
+        else:
+            html_title = note.stem.replace("-", " ").replace("_", " ").title()
+            modified = datetime.fromtimestamp(note.stat().st_mtime)
 
-        list_of_html_notes.append(
-            f"""<div class="note-item">
+        note_item = f"""<div class="note-item">
                     <div class="note-title">
                         <a href="{note.name}">{html_title}</a>
                     </div>
@@ -151,12 +150,14 @@ def generate_index_file(html_titles, modified_dates):
                         {modified.strftime("%B %d, %Y")}
                     </div>
                 </div>"""
-        )
 
-    # sorting the list alphabetically
-    list_of_html_notes.sort()
-    # converting list to string to inject is as a whole html block into index file
-    list_of_html_notes = " ".join(list_of_html_notes)
+        # building dictionary of title - note pairs
+        dict_of_html_notes[f"{html_title}"] = note_item
+    # sorting dictionary alphabetically by key == title
+    dict_of_html_notes = {key: dict_of_html_notes[key] for key in sorted(dict_of_html_notes.keys())}
+
+    # joining dictionary values into a string to inject is as a whole html block into index file
+    dict_of_html_notes = " ".join(dict_of_html_notes.values())
 
     # index.html template creation
     index_page = f"""<!DOCTYPE html>
@@ -171,7 +172,7 @@ def generate_index_file(html_titles, modified_dates):
         <div>
             <h1>My Notes</h1>
             <div class="note-list">
-                {list_of_html_notes}
+                {dict_of_html_notes}
             </div>
         </div>
     </body>
