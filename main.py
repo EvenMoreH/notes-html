@@ -1,7 +1,8 @@
 from pathlib import Path
 import markdown
 from datetime import datetime
-from formatcss import TEMPLATE_CSS
+from templates.css import TEMPLATE_CSS
+from templates.search import SEARCH_SCRIPT
 
 
 # list of extensions to be used by markdown converter
@@ -18,8 +19,8 @@ md_extensions = [
 NOTES_DIRECTORY = Path("notes")
 OUTPUT_DIRECTORY = Path("output")
 
-# check if directory exists using Path
-def directory_exists():
+# checks if directories exist, if not creates them
+def ensure_directories():
     NOTES_DIRECTORY.mkdir(exist_ok=True)
     OUTPUT_DIRECTORY.mkdir(exist_ok=True)
 
@@ -171,10 +172,13 @@ def generate_index_file(html_titles, modified_dates):
     <body>
         <div>
             <h1>My Notes</h1>
-            <div class="note-list">
+            <input id="search" type="search" placeholder="Search notes..." aria-label="Search notes" />
+            <div id="results" class="note-list">
                 {dict_of_html_notes}
             </div>
+            <div id="no-results" style="display:none; margin-top:1rem;">No notes found.</div>
         </div>
+        {SEARCH_SCRIPT}
     </body>
     </html>"""
 
@@ -213,7 +217,7 @@ def remove_unnecessary_html_files():
             file_path.unlink()
 
 def build_notes():
-    directory_exists()
+    ensure_directories()
     md_files_in_dir = list_of_notes_to_convert()
     html_titles, modified = convert_md_to_html(md_files_in_dir)
     remove_unnecessary_html_files()
