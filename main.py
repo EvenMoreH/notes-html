@@ -174,20 +174,29 @@ def generate_index_file(html_titles, modified_dates):
         f.write(index_page)
 
 
-def remove_unnecessary_html_files():
-    # find all md files that were converted
+def find_all_live_md_files():
     live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
     live_md_files_in_dir = []
     for file in live_md_files:
         if file.is_file():
             live_md_files_in_dir.append(file.stem)
 
-    # find all published html files
+    return live_md_files_in_dir
+
+
+def find_all_live_html_files():
     live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
     live_html_files_in_dir = []
     for file in live_html_files:
         if file.is_file():
             live_html_files_in_dir.append(file.stem)
+
+    return live_html_files_in_dir
+
+
+def remove_unnecessary_html_files():
+    live_md_files_in_dir = find_all_live_md_files()
+    live_html_files_in_dir = find_all_live_html_files()
 
     # generate a list of redundant html files (their .md were deleted)
     redundant_files = set(live_html_files_in_dir) - set(live_md_files_in_dir)
