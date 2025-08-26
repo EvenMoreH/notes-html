@@ -25,7 +25,7 @@ def ensure_directories():
     NOTES_DIRECTORY.mkdir(exist_ok=True)
     OUTPUT_DIRECTORY.mkdir(exist_ok=True)
 
-def extract_title(file, file_content):
+def extract_title(file, file_content) -> str:
     # extracting title from .md file
     lines = file_content.split("\n")
     file_title = file.stem.replace("-", " ").replace("_", " ").title()
@@ -36,12 +36,12 @@ def extract_title(file, file_content):
     return file_title
 
 
-def extract_modified_time(file):
+def extract_modified_time(file) -> datetime:
     modified = datetime.fromtimestamp(file.stat().st_mtime)
     return modified
 
 
-def list_of_notes_to_convert():
+def list_of_notes_to_convert() -> list:
     # making a list of .md files in given directory so it can be iterated over
     md_files = list(NOTES_DIRECTORY.glob("*.md"))
     md_files_in_dir = []
@@ -52,7 +52,7 @@ def list_of_notes_to_convert():
     return md_files_in_dir
 
 # iterating over all .md files in notes directory
-def convert_md_to_html(md_files_in_dir):
+def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
     # creating map for file - title pairs
     html_titles = {}
     # creating map for file - modified date pairs
@@ -174,7 +174,7 @@ def generate_index_file(html_titles, modified_dates):
         f.write(index_page)
 
 
-def find_all_live_md_files():
+def find_all_live_md_files() -> list:
     live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
     live_md_files_in_dir = []
     for file in live_md_files:
@@ -184,7 +184,7 @@ def find_all_live_md_files():
     return live_md_files_in_dir
 
 
-def find_all_live_html_files():
+def find_all_live_html_files() -> list:
     live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
     live_html_files_in_dir = []
     for file in live_html_files:
@@ -215,6 +215,7 @@ def remove_unnecessary_html_files():
                     print(f"Permission denied when deleting {file_path}")
                 except OSError as e:
                     print(f"Error deleting {file_path}: {e}")
+
 
 def build_notes():
     ensure_directories()
