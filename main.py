@@ -190,7 +190,7 @@ def remove_unnecessary_html_files():
             live_html_files_in_dir.append(file.stem)
 
     # generate a list of redundant html files (their .md were deleted)
-    redundant_files = sorted(set(live_html_files_in_dir) - set(live_md_files_in_dir))
+    redundant_files = set(live_html_files_in_dir) - set(live_md_files_in_dir)
 
     # remove all redundant html files protecting index.html
     for file in redundant_files:
