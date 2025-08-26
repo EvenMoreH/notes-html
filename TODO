@@ -16,4 +16,4 @@ Minor: add type hints, small docstrings, basic logging, and small defensive chec
 ----
 Next:
 - Add tests
-- Add SonarQube
+<!-- - Add SonarQube -->
