@@ -3,6 +3,7 @@ import markdown
 from datetime import datetime
 from templates.css import TEMPLATE_CSS
 from templates.search import SEARCH_SCRIPT
+import frontmatter
 
 
 # list of extensions to be used by markdown converter
@@ -40,20 +41,6 @@ def extract_modified_time(file):
     return modified
 
 
-def remove_bad_metadata(md_content):
-    # find all lines
-    lines = md_content.split("\n")
-
-    # grab index for each line in all the lines
-    for index, line in enumerate(lines):
-        if line.strip().startswith("#"):
-            # when first .md header is found return it and all after it
-            return "\n".join(lines[index:])
-    # if no header is found, return original content
-    # TODO: build logic that will grab just the title and return rest of the doc for docs that have no "#"
-    return md_content
-
-
 def list_of_notes_to_convert():
     # making a list of .md files in given directory so it can be iterated over
     md_files = list(NOTES_DIRECTORY.glob("*.md"))
@@ -80,11 +67,10 @@ def convert_md_to_html(md_files_in_dir):
             md = markdown.Markdown(extensions=md_extensions)
 
             with file.open("r", encoding="utf-8") as f:
-                # reading the file
-                md_content = f.read()
-
-                # preprocess to remove bad metadata at the top of .md files
-                md_content = remove_bad_metadata(md_content)
+                # loading the file using frontmatter
+                md_content = frontmatter.load(f)
+                # using frontmatter to return file contents without redundant metadata using .content method
+                md_content = md_content.content
 
                 # actual conversion using markdown instance
                 html_note = md.convert(md_content)
