@@ -181,8 +181,6 @@ def remove_unnecessary_html_files():
     for file in live_md_files:
         if file.is_file():
             live_md_files_in_dir.append(file.stem)
-    # adding mock index to list for easier comparisons
-    live_md_files_in_dir.append("index")
 
     # find all published html files
     live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
@@ -192,15 +190,22 @@ def remove_unnecessary_html_files():
             live_html_files_in_dir.append(file.stem)
 
     # generate a list of redundant html files (their .md were deleted)
-    redundant_files = list(set(live_html_files_in_dir) ^ set(live_md_files_in_dir))
+    redundant_files = sorted(set(live_html_files_in_dir) - set(live_md_files_in_dir))
 
-    # remove all redundant html files
+    # remove all redundant html files protecting index.html
     for file in redundant_files:
-        filename = file + ".html"
-        file_path = OUTPUT_DIRECTORY / filename
+        if file != "index":
+            filename = file + ".html"
+            file_path = OUTPUT_DIRECTORY / filename
 
-        if file_path.exists():
-            file_path.unlink()
+            if file_path.exists():
+                try:
+                    file_path.unlink()
+                    print(f"Deleted: {file_path}")
+                except PermissionError:
+                    print(f"Permission denied when deleting {file_path}")
+                except OSError as e:
+                    print(f"Error deleting {file_path}: {e}")
 
 def build_notes():
     ensure_directories()
