@@ -59,11 +59,9 @@ def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
     modified_dates = {}
 
     for file in md_files_in_dir:
-        # check if conversions will be done on correct files
-        if file.is_file() and file.suffix == ".md":
-            # creating file_out path to save converted files to as .html
-            file_out = OUTPUT_DIRECTORY / file.name.replace(".md", ".html")
-            # creating markdown instance with extensions to use it in upcoming conversion call
+        if file.is_file() and file.suffix.lower() == ".md":
+            # create output .html file path directly from stem to cover .MD and .md extensions
+            file_out = OUTPUT_DIRECTORY / f"{file.stem}.html"
             md = markdown.Markdown(extensions=md_extensions)
 
             with file.open("r", encoding="utf-8") as f:
