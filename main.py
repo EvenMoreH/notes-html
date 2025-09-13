@@ -162,6 +162,18 @@ def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
 
 
 def generate_index_file(html_titles, modified_dates):
+    """
+    Generates an index.html file listing all HTML note files in the OUTPUT_DIRECTORY, excluding index.html itself.
+    Each note is displayed with its title (from html_titles if available, otherwise derived from the filename)
+    and its last modified date (from modified_dates if available, otherwise from the file's metadata).
+    The notes are sorted alphabetically by title and rendered as HTML blocks within the index page.
+    Also injects a search input and supporting CSS/JS for filtering notes.
+    Args:
+        html_titles (dict): A dictionary mapping HTML filenames to their respective titles.
+        modified_dates (dict): A dictionary mapping HTML filenames to their last modified datetime objects.
+    Returns:
+        None. Writes the generated index.html file to OUTPUT_DIRECTORY.
+    """
     # string comprehension to generate list of html_notes excluding index.html file itself
     html_notes = [n for n in OUTPUT_DIRECTORY.glob("*.html") if n.is_file() and n.name != "index.html"]
 

@@ -79,13 +79,13 @@ def test_extract_title(content, file_name, expected_title):
 @pytest.mark.mod_time
 def test_extract_modified_time(tmp_path):
     """
-    Test for the extract_modified_time function.
-    This test creates a temporary markdown file, writes sample content to it, and retrieves its modification time using the standard library.
-    It then calls extract_modified_time on the file and asserts that the returned modification time matches the actual modification time.
+    Test the extract_modified_time function to ensure it returns the correct modification time for a file.
+    This test creates a temporary markdown file, writes sample content to it, and compares the modification time
+    returned by extract_modified_time with the actual modification time obtained from the filesystem.
     Args:
         tmp_path (pathlib.Path): pytest fixture providing a temporary directory unique to the test invocation.
-    Marks:
-        mod_time: Custom pytest mark for tests related to modified time extraction.
+    Asserts:
+        The modification time returned by extract_modified_time matches the actual modification time of the file.
     """
     test_file = tmp_path / "test_file.md"
     test_file.write_text("Test content")
@@ -373,10 +373,178 @@ def test_convert_md_to_html_non_md_file(setup_test_directories):
     assert not (test_output_dir / test_txt_file_name.replace(".txt", ".html")).exists()
 
 
+@pytest.mark.index
+def test_generate_index_file_basic(setup_test_directories):
+    # assigning paths based on setup fixture
+    _, test_output_dir = setup_test_directories
 
-def test_generate_index_file():
-    pass
+    # creating mock HTML files in temp output directory (dictionary with title:content pairs)
+    test_files = {
+        "beta-note.html":"One content",
+        "gamma-note.html":"Two content",
+        "alfa-note.html":"Three content",
+    }
 
+    # writing content to files
+    for filename, content in test_files.items():
+        file_path = test_output_dir / filename
+        file_path.write_text(content, encoding="utf-8")
+
+    # creating mock html_titles dictionary
+    html_titles = {
+        "beta-note.html":"Beta Title",
+        "gamma-note.html":"Gamma Title",
+        "alfa-note.html":"Alfa Title",
+    }
+
+    # creating mock modified dates dictionary
+    test_datetime = datetime(2001, 1, 11, 12, 0, 0)
+    modified = {
+        "beta-note.html":test_datetime,
+        "gamma-note.html":test_datetime,
+        "alfa-note.html":test_datetime,
+    }
+
+    # calling function in test
+    generate_index_file(html_titles, modified)
+
+    # checking if index file was generated
+    index_path = test_output_dir / "index.html"
+    assert index_path.exists()
+
+    # checking if index.html contents were properly generated
+    index_content = index_path.read_text(encoding="utf-8")
+
+    # basic html structure
+    assert "<!DOCTYPE html>" in index_content
+    assert "<html>" in index_content
+    assert "<title>My Notes</title>" in index_content
+    assert "<style>" in index_content
+    assert "</html>" in index_content
+
+    # search functionality present
+    assert '<input id="search" type="search"' in index_content
+    assert 'Search notes...' in index_content
+
+    # checking if all note files were added to index
+    for filename, title in html_titles.items():
+        assert f'<a href="{filename}"' in index_content
+        assert f">{title}</a>" in index_content
+
+    # checking date
+    expected_date = test_datetime.strftime("%B %d, %Y")  # "January 11, 2001"
+    assert expected_date in index_content
+
+    # check if notes are sorted A-Z by title
+    beta_note_position = index_content.find("Beta Title")
+    gamma_note_position = index_content.find("Gamma Title")
+    alfa_note_position = index_content.find("Alfa Title")
+
+    assert 0 < alfa_note_position < beta_note_position < gamma_note_position
+
+
+@pytest.mark.index
+def test_generate_index_file_empty_directory(setup_test_directories):
+    # assigning paths based on setup fixture
+    _, test_output_dir = setup_test_directories
+
+    # creating mock html_titles dictionary
+    html_titles = {}
+
+    # creating mock modified dates dictionary
+    modified = {}
+
+    # calling function in test
+    generate_index_file(html_titles, modified)
+
+    # checking if index file was generated
+    index_path = test_output_dir / "index.html"
+    assert index_path.exists()
+
+    # read and validate the content of the index file
+    index_content = index_path.read_text(encoding="utf-8")
+
+    # verify basic HTML structure
+    assert "<!DOCTYPE html>" in index_content
+    assert "<html>" in index_content
+    assert "<title>My Notes</title>" in index_content
+    assert "<style>" in index_content
+    assert "</html>" in index_content
+
+    # verify search functionality is still present
+    assert '<input id="search" type="search"' in index_content
+    assert 'Search notes...' in index_content
+
+@pytest.mark.index
+def test_generate_index_file_missing_metadata(setup_test_directories):
+    """
+    Test the generate_index_file function when HTML files are missing metadata.
+    This test verifies that:
+    - The index.html file is generated in the output directory.
+    - The index.html contains the expected HTML structure and search functionality.
+    - All note files present in the output directory are included in the index, even if their titles are missing from metadata.
+    - The modification date of each note is displayed in "Month Day, Year" format.
+    - Notes are sorted alphabetically by title, which is derived from the filename if metadata is missing.
+    """
+    # assigning paths based on setup fixture
+    _, test_output_dir = setup_test_directories
+
+    # creating mock HTML files in temp output directory (dictionary with title:content pairs)
+    test_files = {
+        "beta-note.html":"One content",
+        "gamma-note.html":"Two content",
+        "alfa-note.html":"Three content",
+    }
+
+    # writing content to files
+    for filename, content in test_files.items():
+        file_path = test_output_dir / filename
+        file_path.write_text(content, encoding="utf-8")
+
+    # getting modified datetime from one of created files
+    test_modified_date = datetime.fromtimestamp(os.path.getmtime(test_output_dir / "alfa-note.html"))
+
+    # creating mock html_titles dictionary
+    html_titles = {}
+
+    # creating mock modified dates dictionary
+    modified = {}
+
+    # calling function in test
+    generate_index_file(html_titles, modified)
+
+    # checking if index file was generated
+    index_path = test_output_dir / "index.html"
+    assert index_path.exists()
+
+    # checking if index.html contents were properly generated
+    index_content = index_path.read_text(encoding="utf-8")
+
+    # basic html structure
+    assert "<!DOCTYPE html>" in index_content
+    assert "<html>" in index_content
+    assert "<title>My Notes</title>" in index_content
+    assert "<style>" in index_content
+    assert "</html>" in index_content
+
+    # search functionality present
+    assert '<input id="search" type="search"' in index_content
+    assert 'Search notes...' in index_content
+
+    # checking if all note files were added to index based on test_files dictionary, not html_titles
+    for filename in test_files.keys():
+        assert f'<a href="{filename}"' in index_content
+
+    # checking datetime of modification in "January 11, 2001" format
+    assert test_modified_date.strftime("%B %d, %Y") in index_content
+
+    # check if notes are sorted A-Z by title
+        # titles are derived from file names if Title metadata is missing
+    beta_note_position = index_content.find("Beta Note")
+    gamma_note_position = index_content.find("Gamma Note")
+    alfa_note_position = index_content.find("Alfa Note")
+
+    assert 0 < alfa_note_position < beta_note_position < gamma_note_position
 
 def test_find_all_live_md_files():
     pass
