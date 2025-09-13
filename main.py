@@ -90,6 +90,21 @@ def list_of_notes_to_convert() -> list:
 
 # iterating over all .md files in notes directory
 def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
+    """
+    Converts a list of Markdown files to HTML files, extracting titles and modification dates.
+    For each Markdown file in the provided directory:
+    - Converts the file content to HTML using the specified Markdown extensions.
+    - Extracts the title from the file content.
+    - Extracts the last modified date from the file.
+    - Writes the converted HTML to an output file, including a back-link and custom CSS.
+    - Maps the output HTML filename to its title and modification date.
+    Args:
+        md_files_in_dir (Iterable[Path]): An iterable of Path objects representing Markdown files.
+    Returns:
+        tuple[dict, dict]:
+            - A dictionary mapping HTML filenames to their extracted titles.
+            - A dictionary mapping HTML filenames to their last modified dates.
+    """
     # creating map for file - title pairs
     html_titles = {}
     # creating map for file - modified date pairs

@@ -3,6 +3,7 @@ from main import *
 from pathlib import Path
 from datetime import datetime
 import os
+from conftest import setup_test_directories
 
 
 @pytest.mark.dir
@@ -162,8 +163,215 @@ def test_list_of_notes_to_convert(tmp_path, monkeypatch):
     assert dir_path not in test_result
 
 
-def test_convert_md_to_html():
-    pass
+@pytest.mark.conversion
+def test_convert_md_to_html_basic(setup_test_directories):
+    """
+    Test the convert_md_to_html function for basic Markdown to HTML conversion.
+    This test:
+    - Sets up test directories using setup_test_directories fixture.
+    - Creates multiple Markdown files with varying content (basic, complex, and no title).
+    - Writes the files to the test notes directory.
+    - Calls convert_md_to_html with the list of created Markdown files.
+    - Asserts that the correct number of HTML titles and metadata entries are returned.
+    - Verifies that the corresponding HTML files are created in the output directory.
+    - Checks that each HTML file contains essential HTML elements and expected content.
+    Args:
+        setup_test_directories: Pytest fixture that provides temporary test notes and output directories.
+    """
+    # assigning paths based on setup fixture
+    test_notes_dir, test_output_dir = setup_test_directories
+    # create test file contents
+    test_files = {
+        "basic": {
+            "content": "# Test Title\nParagraph 1.\nParagraph 2.",
+            "filename": "basic-file.md",
+        },
+        "complex": {
+            "content": "# Test Title\n## Subtitle\n### Another Header\n\
+            Paragraph\n* List item 1\n* List item 2\n```python\nprint('code block')\n```",
+            "filename": "complex-file.md",
+        },
+        "no_title": {
+            "content": "Paragraph 1.\nParagraph 2.",
+            "filename": "no-title-file.md",
+        },
+    }
+    number_of_test_files = len(test_files.keys())
+
+    # creating empty list to store files in (such list would be an output of list_of_notes_to_convert())
+    md_files_in_dir = []
+    # create files and write content to them based on test_files dictionary
+    for file in test_files.values():
+        file_path = test_notes_dir / file["filename"]
+        file_path.write_text(file["content"], encoding="utf-8")
+        md_files_in_dir.append(file_path)
+
+    # calling function in test
+    html_titles, modified = convert_md_to_html(md_files_in_dir)
+
+    # assert if correct amount of titles and metadata was extracted
+    assert len(html_titles) == number_of_test_files
+    assert len(modified) == number_of_test_files
+
+    # checking if all files were correctly converted and created, and contain proper html
+    for file in test_files.values():
+        html_filename = f"{Path(file["filename"]).stem}.html"
+        html_file_path = test_output_dir / html_filename
+
+        assert html_file_path.exists()
+
+        html_content = html_file_path.read_text(encoding="utf-8")
+        assert "<!DOCTYPE html>" in html_content
+        assert "<html>" in html_content
+        assert "</html>" in html_content
+        assert "<title>" in html_content
+        assert "<style>" in html_content
+        assert "Back to Notes" in html_content
+
+
+@pytest.mark.conversion
+def test_convert_md_to_html_metadata_file(setup_test_directories):
+    """
+    Test the convert_md_to_html function to ensure that Markdown files containing metadata
+    are correctly converted to HTML files with the following requirements:
+    - The metadata block (YAML front matter) is excluded from the HTML output.
+    - The HTML file is created in the output directory.
+    - The HTML file's title matches the title heading in the Markdown content, not the metadata title.
+    - The HTML output contains expected HTML structure and content, including:
+        - <!DOCTYPE html>, <html>, </html>, <title>, <style>, and "Back to Notes".
+        - The Markdown headings and content are preserved.
+    - None of the metadata fields or values appear in the HTML output.
+    Args:
+        setup_test_directories: Pytest fixture that sets up temporary notes and output directories.
+    Asserts:
+        - HTML file exists after conversion.
+        - HTML title matches the title heading in the Markdown file.
+        - Metadata is excluded from the HTML output.
+        - File contents and expected HTML structure are present in the output.
+    """
+    # assigning paths based on setup fixture
+    test_notes_dir, test_output_dir = setup_test_directories
+
+    # creating test file with metadata
+    doc_test_title = "Actual Title"
+    metadata_content = f"""---
+title: Metadata Title
+tags: [test, markdown, metadata]
+date: 01-01-2001
+---
+# {doc_test_title}
+## Subtitle
+File Contents"""
+
+    test_file_name = "metadata-test-file.md"
+    test_file_path = test_notes_dir / test_file_name
+    test_file_path.write_text(metadata_content, encoding="utf-8")
+
+    # calling function in test (creating list out of test_file_path)
+    html_titles, _ = convert_md_to_html([test_file_path])
+
+    html_filename = test_file_name.replace(".md", ".html")
+    html_file_path = test_output_dir / html_filename
+
+    # checking if name and title are correct after conversion
+    assert html_file_path.exists()
+    assert html_titles[html_filename] == doc_test_title
+
+    # read converted file contents
+    html_content = html_file_path.read_text(encoding="utf-8")
+
+    # checking if metadata was excluded
+    assert "---" not in html_content
+    assert "title:" not in html_content
+    assert "Metadata Title" not in html_content
+    assert "tags:" not in html_content
+    assert "test, markdown, metadata" not in html_content
+    assert "date:" not in html_content
+    assert "01-01-2001" not in html_content
+
+    # checking if file contents were preserved
+    assert "<!DOCTYPE html>" in html_content
+    assert "<html>" in html_content
+    assert f"<title>{doc_test_title}</title>" in html_content
+    assert "Subtitle" in html_content
+    assert "File Contents" in html_content
+    assert "<style>" in html_content
+    assert "Back to Notes" in html_content
+    assert "</html>" in html_content
+
+
+@pytest.mark.conversion
+def test_convert_md_to_html_empty_file(setup_test_directories):
+    """
+    Test that an empty Markdown file is correctly converted to an HTML file.
+    This test verifies that:
+    - An empty Markdown file is created and passed to the conversion function.
+    - The resulting HTML file exists in the output directory.
+    - The HTML file uses the filename (with formatting) as the title ("Empty File").
+    - The HTML file contains the expected HTML structure and elements, including:
+        - <!DOCTYPE html>
+        - <html> and </html> tags
+        - <title>Empty File</title>
+        - <style> tag
+        - "Back to Notes" link text
+    """
+    # assigning paths based on setup fixture
+    test_notes_dir, test_output_dir = setup_test_directories
+
+    # create empty markdown file
+    test_file_name = "empty-file.md"
+    test_file_path = test_notes_dir / test_file_name
+    test_file_path.write_text("", encoding="utf-8")
+
+    # calling function in test
+    html_titles, _ = convert_md_to_html([test_file_path])
+
+    html_filename = test_file_name.replace(".md", ".html")
+    html_file_path = test_output_dir / html_filename
+
+    # checking if file was converted correctly and uses filename as Title
+    assert html_file_path.exists()
+    assert html_titles[html_filename] == "Empty File"
+
+    # checking if html file was created correctly despite being empty
+    html_content = html_file_path.read_text(encoding="utf-8")
+
+    assert "<!DOCTYPE html>" in html_content
+    assert "<html>" in html_content
+    assert "<title>Empty File</title>" in html_content
+    assert "<style>" in html_content
+    assert "Back to Notes" in html_content
+    assert "</html>" in html_content
+
+
+@pytest.mark.conversion
+def test_convert_md_to_html_non_md_file(setup_test_directories):
+    # assigning paths based on setup fixture
+    test_notes_dir, test_output_dir = setup_test_directories
+
+    # create valid markdown file
+    test_md_file_name = "valid-file.md"
+    test_md_file_path = test_notes_dir / test_md_file_name
+    test_md_file_path.write_text("# Valid Markdown", encoding="utf-8")
+
+    # creating non-markdown file
+    test_txt_file_name = "non-markdown.txt"
+    test_txt_file_path = test_notes_dir / test_txt_file_name
+    test_txt_file_path.write_text("Not Markdown", encoding="utf-8")
+
+    # calling function in test with list of two test files as arg
+    html_titles, modified = convert_md_to_html([test_md_file_path, test_txt_file_path])
+
+    # checking if only .md file was processed
+    assert len(html_titles) == 1
+    assert len(modified) == 1
+    assert "valid-file.html" in html_titles
+    assert "non-markdown.html" not in html_titles
+
+    # checking if correct file was created
+    assert (test_output_dir / test_md_file_name.replace(".md", ".html")).exists()
+    assert not (test_output_dir / test_txt_file_name.replace(".txt", ".html")).exists()
+
 
 
 def test_generate_index_file():
