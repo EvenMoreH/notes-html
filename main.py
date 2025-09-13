@@ -22,10 +22,33 @@ OUTPUT_DIRECTORY = Path("output")
 
 # checks if directories exist, if not creates them
 def ensure_directories():
+    """
+    Creates the notes and output directories if they do not already exist.
+
+    This function ensures that both NOTES_DIRECTORY and OUTPUT_DIRECTORY are present
+    in the filesystem by creating them if necessary. If the directories already exist,
+    no changes are made.
+
+    Raises:
+        OSError: If the directories cannot be created due to a system error.
+    """
     NOTES_DIRECTORY.mkdir(exist_ok=True)
     OUTPUT_DIRECTORY.mkdir(exist_ok=True)
 
 def extract_title(file, file_content) -> str:
+    """
+    Extracts the title from a Markdown (.md) file's content.
+
+    If the content contains a line starting with '# ', that line (without the '# ') is used as the title.
+    Otherwise, the file's stem is converted to title case, with hyphens and underscores replaced by spaces.
+
+    Args:
+        file: A pathlib.Path-like object representing the file.
+        file_content (str): The content of the Markdown file as a string.
+
+    Returns:
+        str: The extracted or generated title of the file.
+    """
     # extracting title from .md file
     lines = file_content.split("\n")
     file_title = file.stem.replace("-", " ").replace("_", " ").title()
@@ -37,11 +60,25 @@ def extract_title(file, file_content) -> str:
 
 
 def extract_modified_time(file) -> datetime:
+    """
+    Extracts the last modified time of a file.
+
+    Args:
+        file (os.PathLike or pathlib.Path): The file object whose modified time is to be extracted.
+
+    Returns:
+        datetime: The datetime object representing the last modified time of the file.
+    """
     modified = datetime.fromtimestamp(file.stat().st_mtime)
     return modified
 
 
 def list_of_notes_to_convert() -> list:
+    """
+    Generates a list of Markdown (.md) files in the specified notes directory.
+    Returns:
+        list: A list of Path objects representing Markdown files found in NOTES_DIRECTORY.
+    """
     # making a list of .md files in given directory so it can be iterated over
     md_files = list(NOTES_DIRECTORY.glob("*.md"))
     md_files_in_dir = []
