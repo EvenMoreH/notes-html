@@ -237,6 +237,11 @@ def generate_index_file(html_titles, modified_dates):
 
 
 def find_all_live_md_files() -> list:
+    """
+    Finds all Markdown (.md) files in the NOTES_DIRECTORY.
+    Returns:
+        list: A list of stem names (filenames without extension) for all Markdown files found in NOTES_DIRECTORY.
+    """
     live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
     live_md_files_in_dir = []
     for file in live_md_files:
@@ -247,6 +252,11 @@ def find_all_live_md_files() -> list:
 
 
 def find_all_live_html_files() -> list:
+    """
+    Finds all live HTML files in the OUTPUT_DIRECTORY.
+    Returns:
+        list: A list of stem names (filenames without extension) for all HTML files found in OUTPUT_DIRECTORY.
+    """
     live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
     live_html_files_in_dir = []
     for file in live_html_files:

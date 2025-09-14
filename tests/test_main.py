@@ -546,12 +546,101 @@ def test_generate_index_file_missing_metadata(setup_test_directories):
 
     assert 0 < alfa_note_position < beta_note_position < gamma_note_position
 
-def test_find_all_live_md_files():
-    pass
+@pytest.mark.lookup
+def test_find_all_live_md_files(setup_test_directories):
+    """
+    Tests the find_all_live_md_files function to ensure it correctly identifies valid markdown files
+    in a test directory setup.
+    The test performs the following checks:
+    - Creates a set of valid markdown files (.md) and invalid files (non-.md extensions).
+    - Creates a folder named with a .md extension to verify folders are excluded.
+    - Writes sample content to each file.
+    - Calls find_all_live_md_files and asserts:
+        - Only valid markdown files are found.
+        - Invalid files are not included in the results.
+        - Folders with .md in name are excluded from the results.
+    """
+    # test directory setup
+    test_notes_dir, _ = setup_test_directories
 
+    # list of valid markdown files
+    test_valid_files = ["file1.md", "file-2.md", "file_3.md", "file four.md"]
 
-def test_find_all_live_html_files():
-    pass
+    # list of invalid files
+    test_invalid_files = ["badfile1.txt", "badfile-2.html", "badfile_3"]
+
+    # invalid folder
+    test_invalid_folder = test_notes_dir / "folder.md"
+    test_invalid_folder.mkdir()
+
+    # create and write to files
+    for file in test_valid_files:
+        (test_notes_dir / file).write_text("# Test Valid Title\nTest Valid Content", encoding="utf-8")
+
+    for file in test_invalid_files:
+        (test_notes_dir / file).write_text("# Test Invalid Title\nTest Invalid Content", encoding="utf-8")
+
+    # calling function in test
+    test_results = find_all_live_md_files()
+
+    # checking if only valid files were found
+    assert len(test_results) == len(test_valid_files)
+
+    for file in test_valid_files:
+        assert file.replace(".md", "") in test_results
+
+    for file in test_invalid_files:
+        assert file.replace(".md", "") not in test_results
+
+    # checking if folders containing .md were excluded
+    assert test_invalid_folder not in test_results
+
+@pytest.mark.lookup
+def test_find_all_live_html_files(setup_test_directories):
+    """
+    Tests the `find_all_live_html_files` function to ensure it correctly identifies valid HTML files
+    in a test directory while excluding invalid files and folders.
+    The test performs the following steps:
+    - Sets up a test directory with valid HTML files, invalid files, and a folder named with a .html extension.
+    - Writes sample content to each file.
+    - Calls `find_all_live_html_files` to retrieve the list of detected HTML files.
+    - Asserts that only the valid HTML files are found.
+    - Asserts that invalid files and folders are not included in the results.
+    """
+    # test directory setup
+    _, test_output_dir = setup_test_directories
+
+    # list of valid html files
+    test_valid_files = ["file1.html", "file-2.html", "file_3.html", "file four.html"]
+
+    # list of invalid files
+    test_invalid_files = ["badfile1.txt", "badfile-2.md", "badfile_3"]
+
+    # invalid folder
+    test_invalid_folder = test_output_dir / "folder.html"
+    test_invalid_folder.mkdir()
+
+    # create and write to files
+    for file in test_valid_files:
+        (test_output_dir / file).write_text("# Test Valid Title\nTest Valid Content", encoding="utf-8")
+
+    for file in test_invalid_files:
+        (test_output_dir / file).write_text("# Test Invalid Title\nTest Invalid Content", encoding="utf-8")
+
+    # calling function in test
+    test_results = find_all_live_html_files()
+
+    # checking if only valid files were found
+    assert len(test_results) == len(test_valid_files)
+
+    for file in test_valid_files:
+        assert file.replace(".html", "") in test_results
+
+    for file in test_invalid_files:
+        assert file.replace(".html", "") not in test_results
+
+    # checking if folders containing .md were excluded
+    assert test_invalid_folder not in test_results
 
 
 def test_remove_unnecessary_html_files():
