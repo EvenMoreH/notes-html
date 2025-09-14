@@ -268,13 +268,25 @@ def find_all_live_html_files() -> list:
 
 def remove_unnecessary_html_files():
     """
-    Removes redundant HTML files from the output directory whose corresponding Markdown (.md) files no longer exist.
-    This function:
-    - Finds all live Markdown and HTML files in the directory.
-    - Identifies HTML files that do not have a corresponding Markdown file.
-    - Deletes these redundant HTML files, except for 'index.html'.
-    - Handles permission errors and other OS-related exceptions during file deletion.
-    Prints the status of each deletion attempt.
+    Removes HTML files from OUTPUT_DIRECTORY that do not have corresponding Markdown files.
+
+    This function compares the stems of Markdown files in NOTES_DIRECTORY with HTML files
+    in OUTPUT_DIRECTORY. Any HTML file whose stem does not match a Markdown file is considered
+    redundant and is deleted, except for index.html.
+
+    Extended Description:
+        - Finds all Markdown and HTML files in their respective directories.
+        - Identifies HTML files without corresponding Markdown files.
+        - Deletes redundant HTML files, skipping index.html.
+        - Prints status messages for deleted files and errors.
+
+    Assertions:
+        - Only HTML files with corresponding Markdown files remain after execution.
+        - index.html is never deleted.
+        - Permission errors and OS errors are handled gracefully.
+
+    Returns:
+        None
     """
     live_md_files_in_dir = find_all_live_md_files()
     live_html_files_in_dir = find_all_live_html_files()
@@ -299,6 +311,28 @@ def remove_unnecessary_html_files():
 
 
 def build_notes():
+    """
+    Builds HTML notes from Markdown files and generates an index file.
+
+    This function ensures required directories exist, converts Markdown files to HTML,
+    removes unnecessary HTML files, and generates an index file with titles and
+    modification timestamps.
+
+    Extended Description:
+        - Ensures output and source directories are present.
+        - Finds Markdown files to convert.
+        - Converts Markdown files to HTML, collecting titles and modification times.
+        - Removes HTML files that are no longer needed.
+        - Generates an index HTML file listing all notes.
+
+    Assertions:
+        - Output directory exists after execution.
+        - Index file is generated and contains all converted notes.
+        - No unnecessary HTML files remain in the output directory.
+
+    Returns:
+        None
+    """
     ensure_directories()
     md_files_in_dir = list_of_notes_to_convert()
     html_titles, modified = convert_md_to_html(md_files_in_dir)
