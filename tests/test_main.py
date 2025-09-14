@@ -642,9 +642,55 @@ def test_find_all_live_html_files(setup_test_directories):
     # checking if folders containing .md were excluded
     assert test_invalid_folder not in test_results
 
+@pytest.mark.cleanup
+def test_remove_unnecessary_html_files(setup_test_directories):
+    """
+    Test the remove_unnecessary_html_files function to ensure that:
+    - HTML files corresponding to existing markdown files are preserved.
+    - Redundant HTML files (not corresponding to any markdown file) are removed.
+    - The index.html file is preserved.
+    The test sets up temporary directories and files, invokes the function under test,
+    and asserts the correct files remain or are deleted as expected.
+    """
+    # test directory setup
+    test_notes_dir, test_output_dir = setup_test_directories
 
-def test_remove_unnecessary_html_files():
-    pass
+    # list of live .md files
+    test_md_files = ["alfa.md", "beta.md", "gamma.md"]
+
+    # list of live .html files
+    test_html_files = ["alfa.html", "beta.html", "gamma.html"]
+
+    # list of redundant .html files
+    test_redundant_html_files = ["xray.html", "zulu.html"]
+
+    # all html files
+    test_all_html_files = test_html_files + test_redundant_html_files
+
+    # mock index file
+    test_index = test_output_dir / "index.html"
+    test_index.write_text("My Test Index File", encoding="utf-8")
+
+    # create and write to test files
+    for file in test_md_files:
+        (test_notes_dir / file).write_text("Test markdown file", encoding="utf-8")
+
+    for file in test_all_html_files:
+        (test_output_dir / file).write_text("Test html file", encoding="utf-8")
+
+    # calling function in test
+    remove_unnecessary_html_files()
+
+    # checking if live files were preserved
+    for file in test_html_files:
+        assert (test_output_dir / file).exists()
+
+    # checking if redundant files were removed
+    for file in test_redundant_html_files:
+        assert not (test_output_dir / file).exists()
+
+    # checking if index.html was preserved
+    assert test_index.exists()
 
 
 def test_build_notes():

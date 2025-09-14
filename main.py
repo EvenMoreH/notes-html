@@ -267,6 +267,15 @@ def find_all_live_html_files() -> list:
 
 
 def remove_unnecessary_html_files():
+    """
+    Removes redundant HTML files from the output directory whose corresponding Markdown (.md) files no longer exist.
+    This function:
+    - Finds all live Markdown and HTML files in the directory.
+    - Identifies HTML files that do not have a corresponding Markdown file.
+    - Deletes these redundant HTML files, except for 'index.html'.
+    - Handles permission errors and other OS-related exceptions during file deletion.
+    Prints the status of each deletion attempt.
+    """
     live_md_files_in_dir = find_all_live_md_files()
     live_html_files_in_dir = find_all_live_html_files()
 
