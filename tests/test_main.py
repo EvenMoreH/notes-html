@@ -499,10 +499,10 @@ def test_generate_index_file_empty_directory(setup_test_directories: tuple[Path,
     _, test_output_dir = setup_test_directories
 
     # creating mock html_titles dictionary
-    html_titles = {}
+    html_titles: dict[str, str] = {}
 
     # creating mock modified dates dictionary
-    modified = {}
+    modified: dict[str, datetime] = {}
 
     # calling function in test
     generate_index_file(html_titles, modified)
@@ -565,10 +565,10 @@ def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path
     test_modified_date = datetime.fromtimestamp(os.path.getmtime(test_output_dir / "alfa-note.html"))
 
     # creating mock html_titles dictionary
-    html_titles = {}
+    html_titles: dict[str, str] = {}
 
     # creating mock modified dates dictionary
-    modified = {}
+    modified: dict[str, datetime] = {}
 
     # calling function in test
     generate_index_file(html_titles, modified)

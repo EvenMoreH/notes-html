@@ -206,7 +206,7 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
     dict_of_html_notes = {key: dict_of_html_notes[key] for key in sorted(dict_of_html_notes.keys())}
 
     # joining dictionary values into a string to inject is as a whole html block into index file
-    dict_of_html_notes = " ".join(dict_of_html_notes.values())
+    string_of_all_html_notes = " ".join(dict_of_html_notes.values())
 
     # index.html template creation
     index_page = f"""<!DOCTYPE html>
@@ -222,7 +222,7 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
             <h1>My Notes</h1>
             <input id="search" type="search" placeholder="Search notes..." aria-label="Search notes" />
             <div id="results" class="note-list">
-                {dict_of_html_notes}
+                {string_of_all_html_notes}
             </div>
             <div id="no-results" style="display:none; margin-top:1rem;">No notes found.</div>
         </div>
