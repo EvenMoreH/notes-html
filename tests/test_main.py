@@ -1,4 +1,5 @@
 import pytest
+from pytest import MonkeyPatch
 from main import *
 from pathlib import Path
 from datetime import datetime
@@ -7,7 +8,7 @@ from conftest import setup_test_directories
 
 
 @pytest.mark.dir
-def test_ensure_directories(tmp_path, monkeypatch):
+def test_ensure_directories(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     """
     Test the ensure_directories function's ability to create necessary directories.
     This test verifies that the ensure_directories function properly creates the
@@ -55,7 +56,7 @@ def test_ensure_directories(tmp_path, monkeypatch):
         ("# Title 1\n# Title 2\n # Title 3", "test file name.md", "Title 1"),
     ]
 )
-def test_extract_title(content, file_name, expected_title):
+def test_extract_title(content: str, file_name: str, expected_title: str) -> None:
     """
     Test the extract_title function for correct title extraction from Markdown content.
     This test uses parameterized inputs to verify:
@@ -74,7 +75,7 @@ def test_extract_title(content, file_name, expected_title):
     assert title == expected_title
 
 @pytest.mark.mod_time
-def test_extract_modified_time(tmp_path):
+def test_extract_modified_time(tmp_path: Path) -> None:
     """
     Test the extract_modified_time function for correct file modification time extraction.
     This test:
@@ -102,7 +103,7 @@ def test_extract_modified_time(tmp_path):
 
 
 @pytest.mark.input_files
-def test_list_of_notes_to_convert(tmp_path, monkeypatch):
+def test_list_of_notes_to_convert(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     """
     Test the list_of_notes_to_convert function for correct file filtering.
     This test:
@@ -179,7 +180,7 @@ def test_list_of_notes_to_convert(tmp_path, monkeypatch):
 
 
 @pytest.mark.conversion
-def test_convert_md_to_html_basic(setup_test_directories):
+def test_convert_md_to_html_basic(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the convert_md_to_html function for basic Markdown to HTML conversion.
     This test:
@@ -252,7 +253,7 @@ def test_convert_md_to_html_basic(setup_test_directories):
 
 
 @pytest.mark.conversion
-def test_convert_md_to_html_metadata_file(setup_test_directories):
+def test_convert_md_to_html_metadata_file(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the convert_md_to_html function to ensure that Markdown files containing metadata
     are correctly converted to HTML files with the following requirements:
@@ -323,7 +324,7 @@ File Contents"""
 
 
 @pytest.mark.conversion
-def test_convert_md_to_html_empty_file(setup_test_directories):
+def test_convert_md_to_html_empty_file(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the convert_md_to_html function for handling empty Markdown files.
     This test:
@@ -365,7 +366,7 @@ def test_convert_md_to_html_empty_file(setup_test_directories):
 
 
 @pytest.mark.conversion
-def test_convert_md_to_html_non_md_file(setup_test_directories):
+def test_convert_md_to_html_non_md_file(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the convert_md_to_html function to ensure non-Markdown files are ignored.
     This test:
@@ -405,7 +406,7 @@ def test_convert_md_to_html_non_md_file(setup_test_directories):
 
 
 @pytest.mark.index
-def test_generate_index_file_basic(setup_test_directories):
+def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the generate_index_file function for basic index generation with provided titles and dates.
     This test:
@@ -493,7 +494,7 @@ def test_generate_index_file_basic(setup_test_directories):
 
 
 @pytest.mark.index
-def test_generate_index_file_empty_directory(setup_test_directories):
+def test_generate_index_file_empty_directory(setup_test_directories: tuple[Path, Path]) -> None:
     # assigning paths based on setup fixture
     _, test_output_dir = setup_test_directories
 
@@ -525,7 +526,7 @@ def test_generate_index_file_empty_directory(setup_test_directories):
     assert 'Search notes...' in index_content
 
 @pytest.mark.index
-def test_generate_index_file_missing_metadata(setup_test_directories):
+def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Test the generate_index_file function when metadata is missing for HTML files.
     This test:
@@ -607,7 +608,7 @@ def test_generate_index_file_missing_metadata(setup_test_directories):
 
 
 @pytest.mark.lookup
-def test_find_all_live_md_files(setup_test_directories):
+def test_find_all_live_md_files(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Tests the find_all_live_md_files function to ensure it correctly identifies valid markdown files.
     Args:
@@ -661,7 +662,7 @@ def test_find_all_live_md_files(setup_test_directories):
 
 
 @pytest.mark.lookup
-def test_find_all_live_html_files(setup_test_directories):
+def test_find_all_live_html_files(setup_test_directories: tuple[Path, Path]) -> None:
     """
     Tests the find_all_live_html_files function to ensure it correctly identifies valid HTML files
     in a test output directory setup.
@@ -714,7 +715,7 @@ def test_find_all_live_html_files(setup_test_directories):
 
 
 @pytest.mark.cleanup
-def test_remove_unnecessary_html_files(setup_test_directories):
+def test_remove_unnecessary_html_files(setup_test_directories: tuple[Path, Path]) -> None:
     """Test removal of unnecessary HTML files from output directory.
     This test sets up a notes and output directory, creates markdown and HTML files,
     and ensures only HTML files corresponding to markdown files and index.html are
@@ -774,7 +775,7 @@ def test_remove_unnecessary_html_files(setup_test_directories):
 
 
 @pytest.mark.integration
-def test_build_notes(setup_test_directories, monkeypatch):
+def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: MonkeyPatch) -> None:
     """
     Integration test for the build_notes function to verify end-to-end note conversion.
     This test performs the following steps:

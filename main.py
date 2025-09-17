@@ -21,7 +21,7 @@ NOTES_DIRECTORY = Path("notes")
 OUTPUT_DIRECTORY = Path("output")
 
 # checks if directories exist, if not creates them
-def ensure_directories():
+def ensure_directories() -> None:
     """
     Creates the notes and output directories if they do not already exist.
 
@@ -35,7 +35,7 @@ def ensure_directories():
     NOTES_DIRECTORY.mkdir(exist_ok=True)
     OUTPUT_DIRECTORY.mkdir(exist_ok=True)
 
-def extract_title(file, file_content) -> str:
+def extract_title(file: Path, file_content: str) -> str:
     """
     Extracts the title from a Markdown (.md) file's content.
 
@@ -59,12 +59,12 @@ def extract_title(file, file_content) -> str:
     return file_title
 
 
-def extract_modified_time(file) -> datetime:
+def extract_modified_time(file: Path) -> datetime:
     """
     Extracts the last modified time of a file.
 
     Args:
-        file (os.PathLike or pathlib.Path): The file object whose modified time is to be extracted.
+        file (Path): The file object whose modified time is to be extracted.
 
     Returns:
         datetime: The datetime object representing the last modified time of the file.
@@ -73,11 +73,11 @@ def extract_modified_time(file) -> datetime:
     return modified
 
 
-def list_of_notes_to_convert() -> list:
+def list_of_notes_to_convert() -> list[Path]:
     """
     Generates a list of Markdown (.md) files in the specified notes directory.
     Returns:
-        list: A list of Path objects representing Markdown files found in NOTES_DIRECTORY.
+        list[Path]: A list of Path objects representing Markdown files found in NOTES_DIRECTORY.
     """
     # making a list of .md files in given directory so it can be iterated over
     md_files = list(NOTES_DIRECTORY.glob("*.md"))
@@ -89,7 +89,7 @@ def list_of_notes_to_convert() -> list:
     return md_files_in_dir
 
 # iterating over all .md files in notes directory
-def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
+def convert_md_to_html(md_files_in_dir: list[Path]) -> tuple[dict[str, str], dict[str, datetime]]:
     """
     Converts a list of Markdown files to HTML files, extracting titles and modification dates.
     For each Markdown file in the provided directory:
@@ -99,9 +99,9 @@ def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
     - Writes the converted HTML to an output file, including a back-link and custom CSS.
     - Maps the output HTML filename to its title and modification date.
     Args:
-        md_files_in_dir (Iterable[Path]): An iterable of Path objects representing Markdown files.
+        md_files_in_dir (list[Path]): A list of Path objects representing Markdown files.
     Returns:
-        tuple[dict, dict]:
+        tuple[dict[str, str], dict[str, datetime]]:
             - A dictionary mapping HTML filenames to their extracted titles.
             - A dictionary mapping HTML filenames to their last modified dates.
     """
@@ -161,7 +161,7 @@ def convert_md_to_html(md_files_in_dir) -> tuple[dict, dict]:
     return html_titles, modified_dates
 
 
-def generate_index_file(html_titles, modified_dates):
+def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, datetime]) -> None:
     """
     Generates an index.html file listing all HTML note files in the OUTPUT_DIRECTORY, excluding index.html itself.
     Each note is displayed with its title (from html_titles if available, otherwise derived from the filename)
@@ -169,8 +169,8 @@ def generate_index_file(html_titles, modified_dates):
     The notes are sorted alphabetically by title and rendered as HTML blocks within the index page.
     Also injects a search input and supporting CSS/JS for filtering notes.
     Args:
-        html_titles (dict): A dictionary mapping HTML filenames to their respective titles.
-        modified_dates (dict): A dictionary mapping HTML filenames to their last modified datetime objects.
+        html_titles (dict[str, str]): A dictionary mapping HTML filenames to their respective titles.
+        modified_dates (dict[str, datetime]): A dictionary mapping HTML filenames to their last modified datetime objects.
     Returns:
         None. Writes the generated index.html file to OUTPUT_DIRECTORY.
     """
@@ -236,11 +236,11 @@ def generate_index_file(html_titles, modified_dates):
         f.write(index_page)
 
 
-def find_all_live_md_files() -> list:
+def find_all_live_md_files() -> list[str]:
     """
     Finds all Markdown (.md) files in the NOTES_DIRECTORY.
     Returns:
-        list: A list of stem names (filenames without extension) for all Markdown files found in NOTES_DIRECTORY.
+        list[str]: A list of stem names (filenames without extension) for all Markdown files found in NOTES_DIRECTORY.
     """
     live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
     live_md_files_in_dir = []
@@ -251,11 +251,11 @@ def find_all_live_md_files() -> list:
     return live_md_files_in_dir
 
 
-def find_all_live_html_files() -> list:
+def find_all_live_html_files() -> list[str]:
     """
     Finds all live HTML files in the OUTPUT_DIRECTORY.
     Returns:
-        list: A list of stem names (filenames without extension) for all HTML files found in OUTPUT_DIRECTORY.
+        list[str]: A list of stem names (filenames without extension) for all HTML files found in OUTPUT_DIRECTORY.
     """
     live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
     live_html_files_in_dir = []
@@ -266,7 +266,7 @@ def find_all_live_html_files() -> list:
     return live_html_files_in_dir
 
 
-def remove_unnecessary_html_files():
+def remove_unnecessary_html_files() -> None:
     """
     Removes HTML files from OUTPUT_DIRECTORY that do not have corresponding Markdown files.
 
@@ -310,7 +310,7 @@ def remove_unnecessary_html_files():
                     print(f"Error deleting {file_path}: {e}")
 
 
-def build_notes():
+def build_notes() -> None:
     """
     Builds HTML notes from Markdown files and generates an index file.
 
