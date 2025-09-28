@@ -5,7 +5,6 @@ on:
     branches:
       - main
 
-
 jobs:
   build:
     name: Build and analyze
@@ -14,14 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: SonarSource/sonarqube-scan-action@v5
+          fetch-depth: 0  # better relevancy for analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"   # match sonar.python.version (use "3.12" if 3.13 isn't available)
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if exist requirements.txt (pip install -r requirements.txt)
+          pip install pytest coverage
+
+      - name: Run tests with coverage
+        run: |
+          coverage run -m pytest
+          coverage xml -o coverage.xml
+        # If your tests need env vars, add them here via 'env:'
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: SonarSource/sonarqube-quality-gate-action@v1
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
