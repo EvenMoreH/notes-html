@@ -120,15 +120,15 @@ def convert_md_to_html(md_files_in_dir: list[Path]) -> tuple[dict[str, str], dic
                 # loading the file using frontmatter
                 md_content: frontmatter.Post = frontmatter.load(f)
                 # using frontmatter to return file contents without redundant metadata using .content method
-                md_content: str = md_content.content
+                md_content_parsed: str = md_content.content
 
                 # actual conversion using markdown instance
-                html_note: str = md.convert(md_content)
+                html_note: str = md.convert(md_content_parsed)
 
             # building the .html file
             with file_out.open("w", encoding="utf-8") as f:
                 # assigning title for the page
-                title: str = extract_title(file, md_content)
+                title: str = extract_title(file, md_content_parsed)
                 # mapping .md title to the actual file
                 html_titles[file_out.name] = title
 
