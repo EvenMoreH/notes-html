@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 from pytest import MonkeyPatch
-from main import *
+from main import NOTES_DIRECTORY, OUTPUT_DIRECTORY
 
 @pytest.fixture
 def setup_test_directories(tmp_path: Path, monkeypatch: MonkeyPatch) -> tuple[Path, Path]:

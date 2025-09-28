@@ -1,10 +1,16 @@
 import pytest
 from pytest import MonkeyPatch
-from main import *
 from pathlib import Path
 from datetime import datetime
 import os
 from conftest import setup_test_directories
+from main import (
+    ensure_directories, extract_title, extract_modified_time,
+    list_of_notes_to_convert, convert_md_to_html, generate_index_file,
+    find_all_live_md_files, find_all_live_html_files,
+    remove_unnecessary_html_files, build_notes,
+    NOTES_DIRECTORY, OUTPUT_DIRECTORY
+)
 
 
 @pytest.mark.dir
