@@ -19,8 +19,8 @@ def test_ensure_directories(tmp_path: Path, monkeypatch: MonkeyPatch) -> None:
     Returns:
         None
     """
-    test_notes = tmp_path / "notes"
-    test_output = tmp_path / "output"
+    test_notes: Path = tmp_path / "notes"
+    test_output: Path = tmp_path / "output"
 
     monkeypatch.setattr("main.NOTES_DIRECTORY", test_notes)
     monkeypatch.setattr("main.OUTPUT_DIRECTORY", test_output)
@@ -70,8 +70,8 @@ def test_extract_title(content: str, file_name: str, expected_title: str) -> Non
     Assertions:
         - The extracted title matches the expected_title for each test case.
     """
-    test_file = Path(file_name)
-    title = extract_title(test_file, content)
+    test_file: Path = Path(file_name)
+    title: str = extract_title(test_file, content)
     assert title == expected_title
 
 @pytest.mark.mod_time
@@ -89,14 +89,14 @@ def test_extract_modified_time(tmp_path: Path) -> None:
         - The modification time returned by extract_modified_time matches the actual file mod time.
     """
     # test file setup
-    test_file = tmp_path / "test_file.md"
+    test_file: Path = tmp_path / "test_file.md"
     test_file.write_text("Test content")
 
     # fetch actual time
-    actual_mod_time = datetime.fromtimestamp(os.path.getmtime(test_file))
+    actual_mod_time: datetime = datetime.fromtimestamp(os.path.getmtime(test_file))
 
     # fetch modified time from file
-    function_mod_time = extract_modified_time(test_file)
+    function_mod_time: datetime = extract_modified_time(test_file)
 
     # checking if actual time matches modified time
     assert function_mod_time == actual_mod_time
@@ -126,11 +126,11 @@ def test_list_of_notes_to_convert(tmp_path: Path, monkeypatch: MonkeyPatch) -> N
         4. Assert only valid files are returned.
     """
     # creating temp dir
-    test_notes_dir = tmp_path / "notes"
+    test_notes_dir: Path = tmp_path / "notes"
     test_notes_dir.mkdir()
 
     # mock valid files
-    valid_files = [
+    valid_files: list[str] = [
         "file1.md",
         "file2.md",
         "file-hyphen.md",
@@ -139,7 +139,7 @@ def test_list_of_notes_to_convert(tmp_path: Path, monkeypatch: MonkeyPatch) -> N
     ]
 
     # mock invalid files
-    invalid_files = [
+    invalid_files: list[str] = [
         "not-md-file1.txt",
         "not-md-file2.html",
     ]
@@ -153,29 +153,29 @@ def test_list_of_notes_to_convert(tmp_path: Path, monkeypatch: MonkeyPatch) -> N
         (test_notes_dir / file).write_text("Test content")
 
     # create directory(folder) with .md in its name
-    test_folder = "folder.md"
+    test_folder: str = "folder.md"
     (test_notes_dir / test_folder).mkdir()
 
     # monkeypatch global NOTES_DIRECTORY to test path
     monkeypatch.setattr("main.NOTES_DIRECTORY", test_notes_dir)
 
-    test_result = list_of_notes_to_convert()
+    test_result: list[Path] = list_of_notes_to_convert()
 
     # assert if file list matches the input list
     assert len(test_result) == len(valid_files)
 
     # assert if each file is in the result list
     for file in valid_files:
-        file_path = test_notes_dir / file
+        file_path: Path = test_notes_dir / file
         assert file_path in test_result
 
     # assert if no invalid files are in result list
     for file in invalid_files:
-        file_path = test_notes_dir / file
+        file_path: Path = test_notes_dir / file
         assert file_path not in test_result
 
     # assert if no folders(directories) are in result list
-    dir_path = test_notes_dir / test_folder
+    dir_path: Path = test_notes_dir / test_folder
     assert dir_path not in test_result
 
 
@@ -202,9 +202,12 @@ def test_convert_md_to_html_basic(setup_test_directories: tuple[Path, Path]) -> 
         - HTML output contains <!DOCTYPE html>, <html>, </html>, <title>, <style>, and "Back to Notes".
     """
     # assigning paths based on setup fixture
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
+    
     # create test file contents
-    test_files = {
+    test_files: dict[str, dict[str, str]] = {
         "basic": {
             "content": "# Test Title\nParagraph 1.\nParagraph 2.",
             "filename": "basic-file.md",
@@ -219,17 +222,19 @@ def test_convert_md_to_html_basic(setup_test_directories: tuple[Path, Path]) -> 
             "filename": "no-title-file.md",
         },
     }
-    number_of_test_files = len(test_files.keys())
+    number_of_test_files: int = len(test_files.keys())
 
     # creating empty list to store files in (such list would be an output of list_of_notes_to_convert())
-    md_files_in_dir = []
+    md_files_in_dir: list[Path] = []
     # create files and write content to them based on test_files dictionary
     for file in test_files.values():
-        file_path = test_notes_dir / file["filename"]
+        file_path: Path = test_notes_dir / file["filename"]
         file_path.write_text(file["content"], encoding="utf-8")
         md_files_in_dir.append(file_path)
 
     # calling function in test
+    html_titles: dict[str, str]
+    modified: dict[str, datetime]
     html_titles, modified = convert_md_to_html(md_files_in_dir)
 
     # assert if correct amount of titles and metadata was extracted
@@ -238,12 +243,12 @@ def test_convert_md_to_html_basic(setup_test_directories: tuple[Path, Path]) -> 
 
     # checking if all files were correctly converted and created, and contain proper html
     for file in test_files.values():
-        html_filename = f"{Path(file["filename"]).stem}.html"
-        html_file_path = test_output_dir / html_filename
+        html_filename: str = f"{Path(file["filename"]).stem}.html"
+        html_file_path: Path = test_output_dir / html_filename
 
         assert html_file_path.exists()
 
-        html_content = html_file_path.read_text(encoding="utf-8")
+        html_content: str = html_file_path.read_text(encoding="utf-8")
         assert "<!DOCTYPE html>" in html_content
         assert "<html>" in html_content
         assert "</html>" in html_content
@@ -273,11 +278,13 @@ def test_convert_md_to_html_metadata_file(setup_test_directories: tuple[Path, Pa
         - File contents and expected HTML structure are present in the output.
     """
     # assigning paths based on setup fixture
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
 
     # creating test file with metadata
-    doc_test_title = "Actual Title"
-    metadata_content = f"""---
+    doc_test_title: str = "Actual Title"
+    metadata_content: str = f"""---
 title: Metadata Title
 tags: [test, markdown, metadata]
 date: 01-01-2001
@@ -286,22 +293,23 @@ date: 01-01-2001
 ## Subtitle
 File Contents"""
 
-    test_file_name = "metadata-test-file.md"
-    test_file_path = test_notes_dir / test_file_name
+    test_file_name: str = "metadata-test-file.md"
+    test_file_path: Path = test_notes_dir / test_file_name
     test_file_path.write_text(metadata_content, encoding="utf-8")
 
     # calling function in test (creating list out of test_file_path)
+    html_titles: dict[str, str]
     html_titles, _ = convert_md_to_html([test_file_path])
 
-    html_filename = test_file_name.replace(".md", ".html")
-    html_file_path = test_output_dir / html_filename
+    html_filename: str = test_file_name.replace(".md", ".html")
+    html_file_path: Path = test_output_dir / html_filename
 
     # checking if name and title are correct after conversion
     assert html_file_path.exists()
     assert html_titles[html_filename] == doc_test_title
 
     # read converted file contents
-    html_content = html_file_path.read_text(encoding="utf-8")
+    html_content: str = html_file_path.read_text(encoding="utf-8")
 
     # checking if metadata was excluded
     assert "---" not in html_content
@@ -337,25 +345,28 @@ def test_convert_md_to_html_empty_file(setup_test_directories: tuple[Path, Path]
         - HTML output contains expected structure and elements.
     """
     # assigning paths based on setup fixture
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
 
     # create empty markdown file
-    test_file_name = "empty-file.md"
-    test_file_path = test_notes_dir / test_file_name
+    test_file_name: str = "empty-file.md"
+    test_file_path: Path = test_notes_dir / test_file_name
     test_file_path.write_text("", encoding="utf-8")
 
     # calling function in test
+    html_titles: dict[str, str]
     html_titles, _ = convert_md_to_html([test_file_path])
 
-    html_filename = test_file_name.replace(".md", ".html")
-    html_file_path = test_output_dir / html_filename
+    html_filename: str = test_file_name.replace(".md", ".html")
+    html_file_path: Path = test_output_dir / html_filename
 
     # checking if file was converted correctly and uses filename as Title
     assert html_file_path.exists()
     assert html_titles[html_filename] == "Empty File"
 
     # checking if html file was created correctly despite being empty
-    html_content = html_file_path.read_text(encoding="utf-8")
+    html_content: str = html_file_path.read_text(encoding="utf-8")
 
     assert "<!DOCTYPE html>" in html_content
     assert "<html>" in html_content
@@ -379,19 +390,23 @@ def test_convert_md_to_html_non_md_file(setup_test_directories: tuple[Path, Path
         - The output directory contains only the expected HTML file.
     """
     # assigning paths based on setup fixture
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
 
     # create valid markdown file
-    test_md_file_name = "valid-file.md"
-    test_md_file_path = test_notes_dir / test_md_file_name
+    test_md_file_name: str = "valid-file.md"
+    test_md_file_path: Path = test_notes_dir / test_md_file_name
     test_md_file_path.write_text("# Valid Markdown", encoding="utf-8")
 
     # creating non-markdown file
-    test_txt_file_name = "non-markdown.txt"
-    test_txt_file_path = test_notes_dir / test_txt_file_name
+    test_txt_file_name: str = "non-markdown.txt"
+    test_txt_file_path: Path = test_notes_dir / test_txt_file_name
     test_txt_file_path.write_text("Not Markdown", encoding="utf-8")
 
     # calling function in test with list of two test files as arg
+    html_titles: dict[str, str]
+    modified: dict[str, datetime]
     html_titles, modified = convert_md_to_html([test_md_file_path, test_txt_file_path])
 
     # checking if only .md file was processed
@@ -426,10 +441,12 @@ def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) ->
         - Search input is present in the index.
     """
     # assigning paths based on setup fixture
+    _: Path
+    test_output_dir: Path
     _, test_output_dir = setup_test_directories
 
     # creating mock HTML files in temp output directory (dictionary with title:content pairs)
-    test_files = {
+    test_files: dict[str, str] = {
         "beta-note.html":"One content",
         "gamma-note.html":"Two content",
         "alfa-note.html":"Three content",
@@ -437,19 +454,19 @@ def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) ->
 
     # writing content to files
     for filename, content in test_files.items():
-        file_path = test_output_dir / filename
+        file_path: Path = test_output_dir / filename
         file_path.write_text(content, encoding="utf-8")
 
     # creating mock html_titles dictionary
-    html_titles = {
+    html_titles: dict[str, str] = {
         "beta-note.html":"Beta Title",
         "gamma-note.html":"Gamma Title",
         "alfa-note.html":"Alfa Title",
     }
 
     # creating mock modified dates dictionary
-    test_datetime = datetime(2001, 1, 11, 12, 0, 0)
-    modified = {
+    test_datetime: datetime = datetime(2001, 1, 11, 12, 0, 0)
+    modified: dict[str, datetime] = {
         "beta-note.html":test_datetime,
         "gamma-note.html":test_datetime,
         "alfa-note.html":test_datetime,
@@ -459,11 +476,11 @@ def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) ->
     generate_index_file(html_titles, modified)
 
     # checking if index file was generated
-    index_path = test_output_dir / "index.html"
+    index_path: Path = test_output_dir / "index.html"
     assert index_path.exists()
 
     # checking if index.html contents were properly generated
-    index_content = index_path.read_text(encoding="utf-8")
+    index_content: str = index_path.read_text(encoding="utf-8")
 
     # basic html structure
     assert "<!DOCTYPE html>" in index_content
@@ -482,13 +499,13 @@ def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) ->
         assert f">{title}</a>" in index_content
 
     # checking date
-    expected_date = test_datetime.strftime("%B %d, %Y")  # "January 11, 2001"
+    expected_date: str = test_datetime.strftime("%B %d, %Y")  # "January 11, 2001"
     assert expected_date in index_content
 
     # check if notes are sorted A-Z by title
-    beta_note_position = index_content.find("Beta Title")
-    gamma_note_position = index_content.find("Gamma Title")
-    alfa_note_position = index_content.find("Alfa Title")
+    beta_note_position: int = index_content.find("Beta Title")
+    gamma_note_position: int = index_content.find("Gamma Title")
+    alfa_note_position: int = index_content.find("Alfa Title")
 
     assert 0 < alfa_note_position < beta_note_position < gamma_note_position
 
@@ -496,6 +513,8 @@ def test_generate_index_file_basic(setup_test_directories: tuple[Path, Path]) ->
 @pytest.mark.index
 def test_generate_index_file_empty_directory(setup_test_directories: tuple[Path, Path]) -> None:
     # assigning paths based on setup fixture
+    _: Path
+    test_output_dir: Path
     _, test_output_dir = setup_test_directories
 
     # creating mock html_titles dictionary
@@ -508,11 +527,11 @@ def test_generate_index_file_empty_directory(setup_test_directories: tuple[Path,
     generate_index_file(html_titles, modified)
 
     # checking if index file was generated
-    index_path = test_output_dir / "index.html"
+    index_path: Path = test_output_dir / "index.html"
     assert index_path.exists()
 
     # read and validate the content of the index file
-    index_content = index_path.read_text(encoding="utf-8")
+    index_content: str = index_path.read_text(encoding="utf-8")
 
     # verify basic HTML structure
     assert "<!DOCTYPE html>" in index_content
@@ -547,10 +566,12 @@ def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path
         - Notes are sorted alphabetically by title.
     """
     # assigning paths based on setup fixture
+    _: Path
+    test_output_dir: Path
     _, test_output_dir = setup_test_directories
 
     # creating mock HTML files in temp output directory (dictionary with title:content pairs)
-    test_files = {
+    test_files: dict[str, str] = {
         "beta-note.html": "One content",
         "gamma-note.html": "Two content",
         "alfa-note.html": "Three content",
@@ -558,11 +579,11 @@ def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path
 
     # writing content to files
     for filename, content in test_files.items():
-        file_path = test_output_dir / filename
+        file_path: Path = test_output_dir / filename
         file_path.write_text(content, encoding="utf-8")
 
     # getting modified datetime from one of created files
-    test_modified_date = datetime.fromtimestamp(os.path.getmtime(test_output_dir / "alfa-note.html"))
+    test_modified_date: datetime = datetime.fromtimestamp(os.path.getmtime(test_output_dir / "alfa-note.html"))
 
     # creating mock html_titles dictionary
     html_titles: dict[str, str] = {}
@@ -574,11 +595,11 @@ def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path
     generate_index_file(html_titles, modified)
 
     # checking if index file was generated
-    index_path = test_output_dir / "index.html"
+    index_path: Path = test_output_dir / "index.html"
     assert index_path.exists()
 
     # checking if index.html contents were properly generated
-    index_content = index_path.read_text(encoding="utf-8")
+    index_content: str = index_path.read_text(encoding="utf-8")
 
     # basic html structure
     assert "<!DOCTYPE html>" in index_content
@@ -600,9 +621,9 @@ def test_generate_index_file_missing_metadata(setup_test_directories: tuple[Path
 
     # check if notes are sorted A-Z by title
     # titles are derived from file names if Title metadata is missing
-    beta_note_position = index_content.find("Beta Note")
-    gamma_note_position = index_content.find("Gamma Note")
-    alfa_note_position = index_content.find("Alfa Note")
+    beta_note_position: int = index_content.find("Beta Note")
+    gamma_note_position: int = index_content.find("Gamma Note")
+    alfa_note_position: int = index_content.find("Alfa Note")
 
     assert 0 < alfa_note_position < beta_note_position < gamma_note_position
 
@@ -626,16 +647,18 @@ def test_find_all_live_md_files(setup_test_directories: tuple[Path, Path]) -> No
             - Each invalid file and folder are absent from results.
     """
     # test directory setup
+    test_notes_dir: Path
+    _: Path
     test_notes_dir, _ = setup_test_directories
 
     # list of valid markdown files
-    test_valid_files = ["file1.md", "file-2.md", "file_3.md", "file four.md"]
+    test_valid_files: list[str] = ["file1.md", "file-2.md", "file_3.md", "file four.md"]
 
     # list of invalid files
-    test_invalid_files = ["badfile1.txt", "badfile-2.html", "badfile_3"]
+    test_invalid_files: list[str] = ["badfile1.txt", "badfile-2.html", "badfile_3"]
 
     # invalid folder
-    test_invalid_folder = test_notes_dir / "folder.md"
+    test_invalid_folder: Path = test_notes_dir / "folder.md"
     test_invalid_folder.mkdir()
 
     # create and write to files
@@ -646,7 +669,7 @@ def test_find_all_live_md_files(setup_test_directories: tuple[Path, Path]) -> No
         (test_notes_dir / file).write_text("# Test Invalid Title\nTest Invalid Content", encoding="utf-8")
 
     # calling function in test
-    test_results = find_all_live_md_files()
+    test_results: list[str] = find_all_live_md_files()
 
     # checking if only valid files were found
     assert len(test_results) == len(test_valid_files)
@@ -679,16 +702,18 @@ def test_find_all_live_html_files(setup_test_directories: tuple[Path, Path]) -> 
         - Invalid files and folders are excluded.
     """
     # test directory setup
+    _: Path
+    test_output_dir: Path
     _, test_output_dir = setup_test_directories
 
     # list of valid html files
-    test_valid_files = ["file1.html", "file-2.html", "file_3.html", "file four.html"]
+    test_valid_files: list[str] = ["file1.html", "file-2.html", "file_3.html", "file four.html"]
 
     # list of invalid files
-    test_invalid_files = ["badfile1.txt", "badfile-2.md", "badfile_3"]
+    test_invalid_files: list[str] = ["badfile1.txt", "badfile-2.md", "badfile_3"]
 
     # invalid folder
-    test_invalid_folder = test_output_dir / "folder.html"
+    test_invalid_folder: Path = test_output_dir / "folder.html"
     test_invalid_folder.mkdir()
 
     # create and write to files
@@ -699,7 +724,7 @@ def test_find_all_live_html_files(setup_test_directories: tuple[Path, Path]) -> 
         (test_output_dir / file).write_text("# Test Invalid Title\nTest Invalid Content", encoding="utf-8")
 
     # calling function in test
-    test_results = find_all_live_html_files()
+    test_results: list[str] = find_all_live_html_files()
 
     # checking if only valid files were found
     assert len(test_results) == len(test_valid_files)
@@ -734,22 +759,24 @@ def test_remove_unnecessary_html_files(setup_test_directories: tuple[Path, Path]
         - index.html is preserved.
     """
     # test directory setup
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
 
     # list of live .md files
-    test_md_files = ["alfa.md", "beta.md", "gamma.md"]
+    test_md_files: list[str] = ["alfa.md", "beta.md", "gamma.md"]
 
     # list of live .html files
-    test_html_files = ["alfa.html", "beta.html", "gamma.html"]
+    test_html_files: list[str] = ["alfa.html", "beta.html", "gamma.html"]
 
     # list of redundant .html files
-    test_redundant_html_files = ["xray.html", "zulu.html"]
+    test_redundant_html_files: list[str] = ["xray.html", "zulu.html"]
 
     # all html files
-    test_all_html_files = test_html_files + test_redundant_html_files
+    test_all_html_files: list[str] = test_html_files + test_redundant_html_files
 
     # mock index file
-    test_index = test_output_dir / "index.html"
+    test_index: Path = test_output_dir / "index.html"
     test_index.write_text("My Test Index File", encoding="utf-8")
 
     # create and write to test files
@@ -802,17 +829,19 @@ def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: Mon
         - Non-markdown files are not listed in the index.
     """
     # test directory setup
+    test_notes_dir: Path
+    test_output_dir: Path
     test_notes_dir, test_output_dir = setup_test_directories
 
     # creating mock .md files
-    md_files = {
+    md_files: dict[str, str] = {
         "file1.md":"# Title 1\nContent 1",
         "file2.md":"# Title 2\nContent 2",
         "file3.md":"No Title Content",
     }
 
     # creating a non-markdown file that should be skipped
-    non_md_files = {
+    non_md_files: dict[str, str] = {
         "file4.txt": "Not Markdown",
         "file5.xml": "",
     }
@@ -821,7 +850,7 @@ def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: Mon
         (test_notes_dir / filename).write_text(content, encoding="utf-8")
 
     # creating redundant .html files
-    redundant_html_files = ["old.html", "bad_file.html"]
+    redundant_html_files: list[str] = ["old.html", "bad_file.html"]
     for file in redundant_html_files:
         (test_output_dir / file).write_text("Old Content", encoding="utf-8")
 
@@ -838,12 +867,12 @@ def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: Mon
 
     # checking if files were converted
     for md_file, content in md_files.items():
-        html_filename = f"{Path(md_file).stem}.html"
-        html_file = test_output_dir / html_filename
+        html_filename: str = f"{Path(md_file).stem}.html"
+        html_file: Path = test_output_dir / html_filename
         assert html_file.exists()
 
         # using main.py logic to get titles from mock files
-        expected_title = None
+        expected_title: str | None = None
         for line in content.split("\n"):
             if line.startswith("# "):
                 expected_title = line[2:].strip()
@@ -854,13 +883,13 @@ def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: Mon
             expected_title = Path(md_file).stem.replace("-", " ").replace("_", " ").title()
 
         # checking if correct title is present in converted files
-        html_content = html_file.read_text(encoding="utf-8")
+        html_content: str = html_file.read_text(encoding="utf-8")
         assert f"<title>{expected_title}</title>" in html_content
 
     # checking if non-markdown files were skipped
     for non_md_file in non_md_files:
-        html_filename = f"{Path(non_md_file).stem}.html"
-        html_file = test_output_dir / html_filename
+        html_filename: str = f"{Path(non_md_file).stem}.html"
+        html_file: Path = test_output_dir / html_filename
         assert not html_file.exists()
 
     # checking if redundant files were removed
@@ -868,18 +897,18 @@ def test_build_notes(setup_test_directories: tuple[Path, Path], monkeypatch: Mon
         assert not (test_output_dir / redundant_file).exists()
 
     # checking if index.html was created, preserved and has proper content
-    index_file = test_output_dir / "index.html"
+    index_file: Path = test_output_dir / "index.html"
     assert index_file.exists()
 
-    index_content = index_file.read_text(encoding="utf-8")
+    index_content: str = index_file.read_text(encoding="utf-8")
     assert "<title>My Notes</title>" in index_content
 
     # checking if index contains links to converted files
     for md_file in md_files.keys():
-        html_filename = f"{Path(md_file).stem}.html"
+        html_filename: str = f"{Path(md_file).stem}.html"
         assert f'href="{html_filename}"' in index_content
 
     # checking that non-markdown files are not in the index
     for non_md_file in non_md_files:
-        html_filename = f"{Path(non_md_file).stem}.html"
+        html_filename: str = f"{Path(non_md_file).stem}.html"
         assert f'href="{html_filename}"' not in index_content

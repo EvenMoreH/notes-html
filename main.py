@@ -50,8 +50,8 @@ def extract_title(file: Path, file_content: str) -> str:
         str: The extracted or generated title of the file.
     """
     # extracting title from .md file
-    lines = file_content.split("\n")
-    file_title = file.stem.replace("-", " ").replace("_", " ").title()
+    lines: list[str] = file_content.split("\n")
+    file_title: str = file.stem.replace("-", " ").replace("_", " ").title()
     for line in lines:
         if line.startswith("# "):
             file_title = line[2:].strip()
@@ -69,7 +69,7 @@ def extract_modified_time(file: Path) -> datetime:
     Returns:
         datetime: The datetime object representing the last modified time of the file.
     """
-    modified = datetime.fromtimestamp(file.stat().st_mtime)
+    modified: datetime = datetime.fromtimestamp(file.stat().st_mtime)
     return modified
 
 
@@ -80,8 +80,8 @@ def list_of_notes_to_convert() -> list[Path]:
         list[Path]: A list of Path objects representing Markdown files found in NOTES_DIRECTORY.
     """
     # making a list of .md files in given directory so it can be iterated over
-    md_files = list(NOTES_DIRECTORY.glob("*.md"))
-    md_files_in_dir = []
+    md_files: list[Path] = list(NOTES_DIRECTORY.glob("*.md"))
+    md_files_in_dir: list[Path] = []
     for file in md_files:
         if file.is_file():
             md_files_in_dir.append(file)
@@ -106,40 +106,40 @@ def convert_md_to_html(md_files_in_dir: list[Path]) -> tuple[dict[str, str], dic
             - A dictionary mapping HTML filenames to their last modified dates.
     """
     # creating map for file - title pairs
-    html_titles = {}
+    html_titles: dict[str, str] = {}
     # creating map for file - modified date pairs
-    modified_dates = {}
+    modified_dates: dict[str, datetime] = {}
 
     for file in md_files_in_dir:
         if file.is_file() and file.suffix.lower() == ".md":
             # create output .html file path directly from stem to cover .MD and .md extensions
-            file_out = OUTPUT_DIRECTORY / f"{file.stem}.html"
-            md = markdown.Markdown(extensions=md_extensions)
+            file_out: Path = OUTPUT_DIRECTORY / f"{file.stem}.html"
+            md: markdown.Markdown = markdown.Markdown(extensions=md_extensions)
 
             with file.open("r", encoding="utf-8") as f:
                 # loading the file using frontmatter
-                md_content = frontmatter.load(f)
+                md_content: frontmatter.Post = frontmatter.load(f)
                 # using frontmatter to return file contents without redundant metadata using .content method
-                md_content = md_content.content
+                md_content: str = md_content.content
 
                 # actual conversion using markdown instance
-                html_note = md.convert(md_content)
+                html_note: str = md.convert(md_content)
 
             # building the .html file
             with file_out.open("w", encoding="utf-8") as f:
                 # assigning title for the page
-                title = extract_title(file, md_content)
+                title: str = extract_title(file, md_content)
                 # mapping .md title to the actual file
                 html_titles[file_out.name] = title
 
                 # extracting modified date from file
-                modified = extract_modified_time(file)
+                modified: datetime = extract_modified_time(file)
                 # mapping modified date to the actual file
                 modified_dates[file_out.name] = modified
 
                 # injecting data into html
                 # adding return to notes button
-                html_page = f"""<!DOCTYPE html>
+                html_page: str = f"""<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -175,15 +175,17 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
         None. Writes the generated index.html file to OUTPUT_DIRECTORY.
     """
     # string comprehension to generate list of html_notes excluding index.html file itself
-    html_notes = [n for n in OUTPUT_DIRECTORY.glob("*.html") if n.is_file() and n.name != "index.html"]
+    html_notes: list[Path] = [n for n in OUTPUT_DIRECTORY.glob("*.html") if n.is_file() and n.name != "index.html"]
 
     # create empty dictionary for notes
-    dict_of_html_notes = {}
+    dict_of_html_notes: dict[str, str] = {}
 
     # generate links to pages that will be injected into index.html
     for note in html_notes:
         # unwrapping html_titles and matching on html_titles
         # unwrapping modified_dates and matching on html_titles
+        html_title: str
+        modified: datetime
         if note.name in html_titles:
             html_title = html_titles[note.name]
             modified = modified_dates[note.name]
@@ -191,7 +193,7 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
             html_title = note.stem.replace("-", " ").replace("_", " ").title()
             modified = datetime.fromtimestamp(note.stat().st_mtime)
 
-        note_item = f"""<div class="note-item">
+        note_item: str = f"""<div class="note-item">
                     <div class="note-title">
                         <a href="{note.name}">{html_title}</a>
                     </div>
@@ -206,10 +208,10 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
     dict_of_html_notes = {key: dict_of_html_notes[key] for key in sorted(dict_of_html_notes.keys())}
 
     # joining dictionary values into a string to inject is as a whole html block into index file
-    string_of_all_html_notes = " ".join(dict_of_html_notes.values())
+    string_of_all_html_notes: str = " ".join(dict_of_html_notes.values())
 
     # index.html template creation
-    index_page = f"""<!DOCTYPE html>
+    index_page: str = f"""<!DOCTYPE html>
     <html>
     <head>
         <meta charset="utf-8">
@@ -231,7 +233,7 @@ def generate_index_file(html_titles: dict[str, str], modified_dates: dict[str, d
     </html>"""
 
     # crating/saving index.html
-    index_file = OUTPUT_DIRECTORY / "index.html"
+    index_file: Path = OUTPUT_DIRECTORY / "index.html"
     with open(index_file, "w", encoding="utf-8") as f:
         f.write(index_page)
 
@@ -242,8 +244,8 @@ def find_all_live_md_files() -> list[str]:
     Returns:
         list[str]: A list of stem names (filenames without extension) for all Markdown files found in NOTES_DIRECTORY.
     """
-    live_md_files = list(NOTES_DIRECTORY.glob("*.md"))
-    live_md_files_in_dir = []
+    live_md_files: list[Path] = list(NOTES_DIRECTORY.glob("*.md"))
+    live_md_files_in_dir: list[str] = []
     for file in live_md_files:
         if file.is_file():
             live_md_files_in_dir.append(file.stem)
@@ -257,8 +259,8 @@ def find_all_live_html_files() -> list[str]:
     Returns:
         list[str]: A list of stem names (filenames without extension) for all HTML files found in OUTPUT_DIRECTORY.
     """
-    live_html_files = list(OUTPUT_DIRECTORY.glob("*.html"))
-    live_html_files_in_dir = []
+    live_html_files: list[Path] = list(OUTPUT_DIRECTORY.glob("*.html"))
+    live_html_files_in_dir: list[str] = []
     for file in live_html_files:
         if file.is_file():
             live_html_files_in_dir.append(file.stem)
@@ -288,17 +290,17 @@ def remove_unnecessary_html_files() -> None:
     Returns:
         None
     """
-    live_md_files_in_dir = find_all_live_md_files()
-    live_html_files_in_dir = find_all_live_html_files()
+    live_md_files_in_dir: list[str] = find_all_live_md_files()
+    live_html_files_in_dir: list[str] = find_all_live_html_files()
 
     # generate a list of redundant html files (their .md were deleted)
-    redundant_files = set(live_html_files_in_dir) - set(live_md_files_in_dir)
+    redundant_files: set[str] = set(live_html_files_in_dir) - set(live_md_files_in_dir)
 
     # remove all redundant html files protecting index.html
     for file in redundant_files:
         if file != "index":
-            filename = file + ".html"
-            file_path = OUTPUT_DIRECTORY / filename
+            filename: str = file + ".html"
+            file_path: Path = OUTPUT_DIRECTORY / filename
 
             if file_path.exists():
                 try:
@@ -334,7 +336,9 @@ def build_notes() -> None:
         None
     """
     ensure_directories()
-    md_files_in_dir = list_of_notes_to_convert()
+    md_files_in_dir: list[Path] = list_of_notes_to_convert()
+    html_titles: dict[str, str]
+    modified: dict[str, datetime]
     html_titles, modified = convert_md_to_html(md_files_in_dir)
     remove_unnecessary_html_files()
     generate_index_file(html_titles, modified)
